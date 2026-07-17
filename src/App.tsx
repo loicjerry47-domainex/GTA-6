@@ -8,12 +8,13 @@ import {
   Download, Gift,
   Megaphone, Swords, Flame, Shield, Eye,
   MapPin, Anchor, Waves, Building2, Factory, Trees, Mountain,
-  ArrowUp, Coins
+  ArrowUp, Coins, Menu
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 
@@ -194,9 +195,49 @@ function Nav() {
             );
           })}
         </div>
-        <a href="#stocks">
-          <Button size="sm" className="bg-orange-600 hover:bg-orange-500 text-white text-xs shadow-lg shadow-orange-600/20 hover:shadow-orange-500/40 transition-shadow">Get the Edge</Button>
-        </a>
+
+        <div className="flex items-center gap-2">
+          <a href="#stocks" className="hidden sm:block">
+            <Button size="sm" className="bg-orange-600 hover:bg-orange-500 text-white text-xs shadow-lg shadow-orange-600/20 hover:shadow-orange-500/40 transition-shadow">Get the Edge</Button>
+          </a>
+
+          {/* Mobile menu */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <button aria-label="Open menu" className="lg:hidden w-10 h-10 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors">
+                <Menu className="w-5 h-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-[#0c0c0c] border-white/[0.08] w-[82%] max-w-xs p-0">
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <SheetDescription className="sr-only">Site navigation</SheetDescription>
+              <div className="flex items-center gap-2.5 px-6 h-16 border-b border-white/[0.06]">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-bold text-lg tracking-tight">VICE<span className="text-orange-500">CAPITAL</span></span>
+              </div>
+              <nav className="flex flex-col p-3">
+                {NAV_LINKS.map(l => {
+                  const isActive = active === l.href.slice(1);
+                  return (
+                    <SheetClose asChild key={l.href}>
+                      <a href={l.href} className={`flex items-center justify-between px-4 py-3.5 rounded-lg text-base transition-colors ${isActive ? 'bg-orange-500/10 text-orange-400' : 'text-white/70 hover:text-white hover:bg-white/[0.04]'}`}>
+                        {l.label}
+                        {isActive && <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
+                      </a>
+                    </SheetClose>
+                  );
+                })}
+                <SheetClose asChild>
+                  <a href="#stocks" className="mt-3">
+                    <Button className="w-full bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-600/20">Get the Edge</Button>
+                  </a>
+                </SheetClose>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </nav>
   );
@@ -257,7 +298,7 @@ function Hero() {
   return (
     <section id="top" className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
-        <img src="/hero-bg.jpg" alt="" className="w-full h-full object-cover opacity-70" />
+        <img src="/hero-bg.jpg" alt="" loading="eager" fetchPriority="high" decoding="async" className="w-full h-full object-cover opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/45 to-[#0a0a0a]" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-black/70" />
       </div>
@@ -465,7 +506,7 @@ function RegionsSection() {
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Region selector */}
-          <div className="lg:col-span-1 flex lg:flex-col gap-2.5 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+          <div className="region-scroll lg:col-span-1 flex lg:flex-col gap-2.5 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
             {REGIONS.map(r => {
               const ra = ACCENTS[r.accent];
               const isActive = r.id === sel;
@@ -576,7 +617,7 @@ function StockHub() {
   return (
     <section id="stocks" className="py-24 relative">
       <div className="absolute inset-0 opacity-15">
-        <img src="/stock-desk.jpg" alt="" className="w-full h-full object-cover" />
+        <img src="/stock-desk.jpg" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/95 to-[#0a0a0a]" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto section-padding reveal-up">
@@ -668,7 +709,7 @@ function StockHub() {
 
         {tab === 'history' && (
           <div className="glass-card-strong p-4 sm:p-6">
-            <img src="/ttwo-full-chart.png" alt="TTWO Stock Chart" className="w-full rounded-lg" />
+            <img src="/ttwo-full-chart.png" alt="TTWO stock price history chart" loading="lazy" decoding="async" className="w-full rounded-lg" />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
               {[{ label: 'From 52W Low', val: '+27.2%', color: 'text-emerald-400' }, { label: 'From ATH', val: '-9.0%', color: 'text-red-400' }, { label: '2Y Return', val: '+51.4%', color: 'text-emerald-400' }, { label: 'Avg Volume', val: '2.25M', color: 'text-white/60' }].map(s => (
                 <div key={s.label} className="bg-white/[0.02] rounded-lg p-3 text-center">
@@ -806,7 +847,7 @@ function InGameEconomy() {
   return (
     <section id="economy" className="py-24 relative">
       <div className="absolute inset-0 opacity-12">
-        <img src="/vault-wealth.jpg" alt="" className="w-full h-full object-cover" />
+        <img src="/vault-wealth.jpg" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/95 to-[#0a0a0a]" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto section-padding reveal-up">
@@ -928,7 +969,7 @@ function ContentSuite() {
   return (
     <section id="content" className="py-24 relative">
       <div className="absolute inset-0 opacity-12">
-        <img src="/content-empire.jpg" alt="" className="w-full h-full object-cover" />
+        <img src="/content-empire.jpg" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/95 to-[#0a0a0a]" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto section-padding reveal-up">
@@ -1021,7 +1062,7 @@ function ArbitrageSection() {
   return (
     <section id="arbitrage" className="py-24 relative">
       <div className="absolute inset-0 opacity-12">
-        <img src="/mobile-finance.jpg" alt="" className="w-full h-full object-cover" />
+        <img src="/mobile-finance.jpg" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/95 to-[#0a0a0a]" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto section-padding reveal-up">
@@ -1143,7 +1184,7 @@ function Toolkit() {
   return (
     <section className="py-24 relative">
       <div className="absolute inset-0 opacity-10">
-        <img src="/yacht-lifestyle.jpg" alt="" className="w-full h-full object-cover" />
+        <img src="/yacht-lifestyle.jpg" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/95 to-[#0a0a0a]" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto section-padding reveal-up">
@@ -1226,7 +1267,7 @@ function TimelineRisk() {
   return (
     <section id="timeline" className="py-24 relative">
       <div className="absolute inset-0 opacity-10">
-        <img src="/virtual-economy.jpg" alt="" className="w-full h-full object-cover" />
+        <img src="/virtual-economy.jpg" alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/95 to-[#0a0a0a]" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto section-padding reveal-up">

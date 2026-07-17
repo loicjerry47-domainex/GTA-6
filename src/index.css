@@ -32,6 +32,8 @@
   
   html {
     scroll-behavior: smooth;
+    /* Offset anchor jumps so section headings clear the fixed nav */
+    scroll-padding-top: 4.5rem;
   }
   
   body {
@@ -233,3 +235,18 @@
   .reveal-up { opacity: 1 !important; transform: none !important; }
   html { scroll-behavior: auto; }
 }
+
+/* Lighten the backdrop on phones: no aurora animation, no blend layer —
+   keeps a static gradient glow while cutting repaint/compositing cost. */
+@media (max-width: 768px) {
+  .vc-aurora { animation: none; filter: blur(55px); opacity: 0.4; }
+  .vc-aurora--3 { display: none; }
+  .vc-noise { display: none; }
+}
+
+/* Momentum + gentle snap for the horizontal region selector on touch */
+.region-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.region-scroll > * { scroll-snap-align: start; }
