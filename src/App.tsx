@@ -1444,7 +1444,7 @@ function Footer() {
   return (
     <footer className="py-16 border-t border-white/[0.06]">
       <div className="max-w-7xl mx-auto section-padding">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
@@ -1457,18 +1457,44 @@ function Footer() {
             </p>
           </div>
           <div>
-            <h4 className="text-sm font-semibold mb-4">Navigate</h4>
+            <h4 className="text-sm font-semibold mb-4">Explore</h4>
             <ul className="space-y-2">
-              {['Stock Intelligence', 'In-Game Economy', 'Content Empire', 'Real-World Arbitrage', 'Timeline & Risk'].map(item => (
-                <li key={item}><a href={`#${item.toLowerCase().replace(/ /g, '-')}`} className="text-sm text-white/30 hover:text-orange-400 transition-colors">{item}</a></li>
+              {[
+                { label: 'The Map', href: '#map' },
+                { label: 'Stock Intelligence', href: '#stocks' },
+                { label: 'In-Game Economy', href: '#economy' },
+                { label: 'Content Empire', href: '#content' },
+                { label: 'Real-World Arbitrage', href: '#arbitrage' },
+                { label: 'Timeline & Risk', href: '#timeline' },
+              ].map(item => (
+                <li key={item.href}><a href={item.href} className="text-sm text-white/30 hover:text-orange-400 transition-colors">{item.label}</a></li>
               ))}
             </ul>
           </div>
           <div>
-            <h4 className="text-sm font-semibold mb-4">Data Sources</h4>
+            <h4 className="text-sm font-semibold mb-4">Guides</h4>
             <ul className="space-y-2">
-              {['Yahoo Finance', 'Wall Street Analysts', 'Rockstar Newswire', 'SEC Filings'].map(item => (
-                <li key={item} className="text-sm text-white/30">{item}</li>
+              {[
+                { label: 'All guides', href: '/guides/' },
+                { label: 'Release date & editions', href: '/guides/gta-6-release-date/' },
+                { label: 'Invest in GTA 6 (TTWO)', href: '/guides/how-to-invest-in-gta-6-ttwo-stock/' },
+                { label: 'Make money in GTA Online', href: '/guides/how-to-make-money-gta-6-online/' },
+                { label: 'The map of Leonida', href: '/guides/gta-6-map-regions-leonida/' },
+              ].map(item => (
+                <li key={item.href}><a href={item.href} className="text-sm text-white/30 hover:text-orange-400 transition-colors">{item.label}</a></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold mb-4">Company</h4>
+            <ul className="space-y-2">
+              {[
+                { label: 'About & methodology', href: '/about/' },
+                { label: 'Disclaimer', href: '/legal/disclaimer/' },
+                { label: 'Privacy policy', href: '/legal/privacy/' },
+                { label: 'Terms of use', href: '/legal/terms/' },
+              ].map(item => (
+                <li key={item.href}><a href={item.href} className="text-sm text-white/30 hover:text-orange-400 transition-colors">{item.label}</a></li>
               ))}
             </ul>
           </div>

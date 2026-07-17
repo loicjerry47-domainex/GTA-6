@@ -74,15 +74,40 @@ it live, copy `.env.example` to `.env.local` and set any of these (all optional)
 The market numbers are an honest snapshot (labeled with the "as of" date in the UI). The app never
 presents stale data as live — wire `VITE_QUOTE_ENDPOINT` to flip it to real-time.
 
+## Content & SEO layer
+
+The React app is the interactive command center. Alongside it is a set of **static,
+crawlable content pages** (guides + policy/about) that ship in `public/` — zero JS,
+instant load, and structured for both Google and AI answer engines (AEO/GEO):
+
+- Answer-first ledes, "key takeaways" boxes, question-based H2s, tables, and FAQs.
+- Per-page `Article`, `FAQPage`, and `BreadcrumbList` JSON-LD; canonical + Open Graph tags.
+- `sitemap.xml`, `robots.txt`, and `Organization`/`WebSite` JSON-LD on the home page.
+
+Pages are produced by a committed generator so they're reproducible (and so the Vercel
+build needs no extra tooling). To edit content or point it at your real domain:
+
+```bash
+SITE_URL="https://your-domain" CONTACT_EMAIL="you@your-domain" node scripts/gen-content.mjs
+```
+
+Then set the same `VITE_SITE_URL` (in `.env` / Vercel env) so the app's canonical/OG match.
+
 ## Project structure
 
 ```
 src/
   App.tsx           All sections + shared motion/count-up primitives
-  main.tsx          Entry point (mounts App, imports fonts)
+  main.tsx          Entry point (mounts App, imports fonts + optional analytics)
   index.css         Design tokens, glass/utility classes, backdrop + motion CSS
   components/ui/     shadcn/ui component library
-public/             Section background imagery
+scripts/
+  gen-content.mjs   Generator for the static SEO/AEO content + sitemap + robots
+public/
+  guides/ legal/ about/   Generated static content pages (committed)
+  content/style.css        Shared stylesheet for content pages
+  sitemap.xml robots.txt   Technical SEO
+  og-image.png favicon.ico Share image + icon
 docs/
   GTA-VI-INTELLIGENCE-DOSSIER.md   The full research report behind the app
   research/                        Source market data (CSV) + reference chart
