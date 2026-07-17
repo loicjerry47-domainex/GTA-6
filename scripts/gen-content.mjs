@@ -15,9 +15,9 @@ import { fileURLToPath } from 'url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = join(ROOT, 'public');
 
-const SITE_URL = (process.env.SITE_URL || 'https://gta-6.vercel.app').replace(/\/$/, '');
+const SITE_URL = (process.env.SITE_URL || 'https://gta6.wxza.net').replace(/\/$/, '');
 const SITE_NAME = 'Vice Capital';
-const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'hello@vicecapital.app';
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'hello@gta6.wxza.net';
 const PUBLISHED = '2026-07-17';
 const MODIFIED = '2026-07-17';
 const UPDATED_HUMAN = 'July 17, 2026';

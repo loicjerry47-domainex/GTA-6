@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gta-6.vercel.app/sitemap.xml
+Sitemap: https://gta6.wxza.net/sitemap.xml
