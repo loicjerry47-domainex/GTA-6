@@ -59,6 +59,21 @@ The build is fully self-contained (all fonts and assets are bundled), so `dist/`
 any static host — Vercel, Netlify, GitHub Pages, Cloudflare Pages, or an S3 bucket. `vite.config.ts`
 uses `base: './'` so it also works from a sub-path.
 
+## Configuration (optional live features)
+
+Everything works out of the box with a **dated market snapshot** and local signup storage. To make
+it live, copy `.env.example` to `.env.local` and set any of these (all optional):
+
+| Variable | What it enables |
+|---|---|
+| `VITE_SITE_URL` | Absolute URL for the Open Graph share image (so link previews render). |
+| `VITE_QUOTE_ENDPOINT` | A JSON quote endpoint (`{ price, changePct?, updatedAt? }`). When set, the TTWO price shows a live **LIVE** badge; otherwise it's clearly labeled **Snapshot · &lt;date&gt;**. Point it at your own serverless proxy so the API key stays server-side. |
+| `VITE_SUBSCRIBE_ENDPOINT` | A POST endpoint that receives signups (`{ email, alerts, ts }`) — Formspree, Buttondown, ConvertKit, or your own function. Without it, signups still validate and persist in the visitor's browser. |
+| `VITE_ANALYTICS_DOMAIN` | Loads a privacy-friendly analytics script (Plausible by default via `VITE_ANALYTICS_SRC`). Unset = no analytics, no external calls. |
+
+The market numbers are an honest snapshot (labeled with the "as of" date in the UI). The app never
+presents stale data as live — wire `VITE_QUOTE_ENDPOINT` to flip it to real-time.
+
 ## Project structure
 
 ```

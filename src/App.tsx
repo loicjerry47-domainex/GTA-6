@@ -149,6 +149,69 @@ function Countdown() {
 /* ═══════════════════════════════════════════
    NAV
    ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   MARKET DATA — honest snapshot + live-ready hook
+   ═══════════════════════════════════════════ */
+const TTWO = {
+  asOf: 'Jul 17, 2026',
+  price: 243.91,
+  changePct: 0.06,       // vs prior close (snapshot)
+  monthChangePct: 12.9,
+  low52: 188.23,
+  high52: 265.94,
+  ath: 265.94,
+  marketCap: '$45.3B',
+  fwdPE: '23.95',
+  meanTarget: 301,       // mean of the tracked analyst targets below
+};
+
+/**
+ * If VITE_QUOTE_ENDPOINT is set, fetch a live quote ({ price, changePct?, updatedAt? })
+ * and use it; otherwise fall back to the dated snapshot above. Never blocks render,
+ * never shows a broken state — stale data is always labeled as a snapshot.
+ */
+function useLiveQuote() {
+  const [live, setLive] = useState<{ price: number; changePct: number; updatedAt: string } | null>(null);
+  useEffect(() => {
+    const endpoint = import.meta.env.VITE_QUOTE_ENDPOINT;
+    if (!endpoint) return;
+    let cancelled = false;
+    fetch(endpoint)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error('quote fetch failed'))))
+      .then(d => {
+        if (!cancelled && d && typeof d.price === 'number') {
+          setLive({ price: d.price, changePct: typeof d.changePct === 'number' ? d.changePct : 0, updatedAt: d.updatedAt || 'live' });
+        }
+      })
+      .catch(() => { /* keep snapshot */ });
+    return () => { cancelled = true; };
+  }, []);
+  const price = live?.price ?? TTWO.price;
+  const changePct = live?.changePct ?? TTWO.changePct;
+  return { price, changePct, isLive: !!live, asOf: live?.updatedAt ?? TTWO.asOf };
+}
+
+/** Persist a signup locally and POST to VITE_SUBSCRIBE_ENDPOINT when configured. */
+async function subscribeEmail(email: string, alerts: string[]): Promise<'ok' | 'duplicate'> {
+  const entry = { email, alerts, ts: new Date().toISOString() };
+  let duplicate = false;
+  try {
+    const key = 'vc_subscribers';
+    const list: { email: string }[] = JSON.parse(localStorage.getItem(key) || '[]');
+    if (list.some(e => e.email.toLowerCase() === email.toLowerCase())) duplicate = true;
+    else { list.push(entry); localStorage.setItem(key, JSON.stringify(list)); }
+  } catch { /* storage unavailable — still attempt endpoint */ }
+  const endpoint = import.meta.env.VITE_SUBSCRIBE_ENDPOINT;
+  if (endpoint && !duplicate) {
+    try {
+      await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(entry) });
+    } catch { /* non-blocking: local copy is kept regardless */ }
+  }
+  return duplicate ? 'duplicate' : 'ok';
+}
+
+const CATALYST_ALERTS = ['Trailer 3', 'Review embargo', 'Launch day', 'Online launch'];
+
 const NAV_LINKS = [
   { label: 'Map', href: '#map' },
   { label: 'Stocks', href: '#stocks' },
@@ -250,7 +313,7 @@ function EconomyTicker() {
   const items = [
     'GTA V lifetime revenue · $8.5B+',
     'Shark Cards to date · ~$5B',
-    'TTWO · $238.72 ▲ 1.27%',
+    'TTWO · $243.91 ▲ this month +12.9%',
     'GTA VI Year-1 forecast · $3.2B',
     'Launch-day sales est. · $1.2B',
     'Top analyst target · $368 (+54%)',
@@ -273,13 +336,24 @@ function EconomyTicker() {
 
 function Hero() {
   const [email, setEmail] = useState('');
+  const [alerts, setAlerts] = useState<string[]>(['Launch day']);
+  const [subscribed, setSubscribed] = useState(false);
+  const q = useLiveQuote();
   const launch = new Date('2026-11-19T00:00:00Z').getTime();
   const daysToLaunch = Math.max(0, Math.ceil((launch - Date.now()) / 86400000));
+  const topTarget = 368;
+  const upsidePct = Math.round((topTarget / q.price - 1) * 100);
 
-  const submitEmail = (e: FormEvent) => {
+  const toggleAlert = (a: string) =>
+    setAlerts(prev => (prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]));
+
+  const submitEmail = async (e: FormEvent) => {
     e.preventDefault();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast.error('Enter a valid email to get launch intel.'); return; }
-    toast.success('You are on the list. Launch intel incoming.', { description: email });
+    const res = await subscribeEmail(email, alerts);
+    if (res === 'duplicate') toast('You are already on the list.', { description: email });
+    else toast.success('You are on the list. Launch intel incoming.', { description: alerts.length ? `Alerts: ${alerts.join(' · ')}` : email });
+    setSubscribed(true);
     setEmail('');
   };
 
@@ -290,8 +364,8 @@ function Hero() {
 
   const stats: { label: string; node: ReactNode; sub: string; icon: typeof Clock }[] = [
     { label: 'Pre-Orders Live', node: 'June 25', sub: '$79.99 / $99.99', icon: ShoppingCart },
-    { label: 'TTWO Price', node: <CountUp value={238.72} prefix="$" decimals={2} />, sub: '30 analysts · Strong Buy', icon: Target },
-    { label: 'Top Price Target', node: <CountUp value={368} prefix="$" />, sub: '+54% implied upside', icon: TrendingUp },
+    { label: 'TTWO Price', node: <CountUp value={q.price} prefix="$" decimals={2} />, sub: q.isLive ? 'Live quote' : `Snapshot · ${q.asOf}`, icon: Target },
+    { label: 'Top Price Target', node: <CountUp value={topTarget} prefix="$" />, sub: `+${upsidePct}% implied upside`, icon: TrendingUp },
     { label: 'Days to Launch', node: <CountUp value={daysToLaunch} />, sub: 'The clock is ticking', icon: Clock },
   ];
 
@@ -324,12 +398,25 @@ function Hero() {
           </Button>
         </div>
 
-        {/* Email capture */}
-        <form onSubmit={submitEmail} className="max-w-md mx-auto glass-card p-1 flex gap-1">
-          <Input placeholder="Enter email for launch alerts" value={email} onChange={e => setEmail(e.target.value)} className="bg-transparent border-0 text-sm text-white placeholder:text-white/30 focus-visible:ring-0 focus-visible:ring-offset-0" />
-          <Button type="submit" size="sm" className="bg-orange-600 hover:bg-orange-500 text-white whitespace-nowrap text-xs">Get Alerts</Button>
-        </form>
-        <p className="text-[10px] text-white/25 mt-2">No spam. Unsubscribe anytime. Launch intel only.</p>
+        {/* Email capture + catalyst alerts */}
+        <div className="max-w-md mx-auto">
+          <form onSubmit={submitEmail} className="glass-card p-1 flex gap-1">
+            <Input type="email" placeholder="Enter email for launch alerts" value={email} onChange={e => setEmail(e.target.value)} className="bg-transparent border-0 text-sm text-white placeholder:text-white/30 focus-visible:ring-0 focus-visible:ring-offset-0" />
+            <Button type="submit" size="sm" className="bg-orange-600 hover:bg-orange-500 text-white whitespace-nowrap text-xs">{subscribed ? 'Update' : 'Get Alerts'}</Button>
+          </form>
+          <div className="flex flex-wrap justify-center gap-1.5 mt-2.5">
+            {CATALYST_ALERTS.map(a => {
+              const on = alerts.includes(a);
+              return (
+                <button key={a} type="button" onClick={() => toggleAlert(a)}
+                  className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors ${on ? 'bg-orange-500/15 border-orange-500/30 text-orange-300' : 'bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/70'}`}>
+                  {on ? '✓ ' : ''}{a}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-white/25 mt-2">{subscribed ? "Saved — we'll ping you at each catalyst you picked." : 'No spam. Pick the moments you want to hear about.'}</p>
+        </div>
 
         {/* Stats row */}
         <div className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 max-w-3xl mx-auto">
@@ -592,6 +679,7 @@ function RegionsSection() {
    ═══════════════════════════════════════════ */
 function StockHub() {
   const [tab, setTab] = useState<'ttwo' | 'peripherals' | 'history'>('ttwo');
+  const q = useLiveQuote();
 
   const analysts = [
     { firm: 'BofA Securities', target: 368, rating: 'Buy', date: 'Jun 23' },
@@ -612,7 +700,8 @@ function StockHub() {
     { ticker: 'EA', name: 'Electronic Arts', price: '$148.20', thesis: 'Sector rotation on gaming enthusiasm. Indirect beneficiary.', upside: 'Low' },
   ];
 
-  const upside = (t: number) => ((t / 238.72 - 1) * 100).toFixed(0);
+  const upside = (t: number) => ((t / q.price - 1) * 100).toFixed(0);
+  const meanTarget = Math.round(analysts.reduce((s, a) => s + a.target, 0) / analysts.length);
 
   return (
     <section id="stocks" className="py-24 relative">
@@ -640,19 +729,22 @@ function StockHub() {
             <div className="lg:col-span-3 glass-card-strong p-6">
               <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                 <div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <h3 className="text-2xl font-bold">TTWO</h3>
                     <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/25">Strong Buy</Badge>
+                    {q.isLive
+                      ? <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/25"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1.5" /> LIVE</Badge>
+                      : <Badge className="bg-white/[0.06] text-white/45 border-white/[0.08]">Snapshot · {q.asOf}</Badge>}
                   </div>
                   <p className="text-xs text-white/30">Take-Two Interactive Software, Inc.</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold mono">$238.72</div>
-                  <div className="flex items-center justify-end gap-1 text-emerald-400 text-sm"><TrendingUp className="w-3.5 h-3.5" /> +1.27% today</div>
+                  <div className="text-3xl font-bold mono">${q.price.toFixed(2)}</div>
+                  <div className="flex items-center justify-end gap-1 text-emerald-400 text-sm"><TrendingUp className="w-3.5 h-3.5" /> +{TTWO.monthChangePct}% this month</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                {[{ label: '52W Range', val: '$187 - $265' }, { label: 'ATH', val: '$262.29' }, { label: 'Market Cap', val: '$44.3B' }, { label: 'Forward P/E', val: '23.95' }].map(s => (
+                {[{ label: '52W Range', val: `$${TTWO.low52} – $${TTWO.high52}` }, { label: 'ATH', val: `$${TTWO.ath}` }, { label: 'Market Cap', val: TTWO.marketCap }, { label: 'Forward P/E', val: TTWO.fwdPE }].map(s => (
                   <div key={s.label} className="bg-white/[0.02] rounded-lg p-3">
                     <div className="text-[10px] text-white/30 uppercase tracking-wider">{s.label}</div>
                     <div className="text-sm font-semibold mono mt-1">{s.val}</div>
@@ -662,9 +754,9 @@ function StockHub() {
               <div className="bg-white/[0.02] rounded-lg p-4 border border-white/[0.04]">
                 <div className="flex items-center gap-2 mb-3"><Newspaper className="w-4 h-4 text-orange-400" /><span className="text-sm font-medium">Latest Catalyst</span></div>
                 <p className="text-sm text-white/50 leading-relaxed">
-                  GTA VI pre-orders went live June 25 at <span className="text-white font-medium">$79.99</span> (Standard) and <span className="text-white font-medium">$99.99</span> (Ultimate Edition).
-                  Disc-less physical edition confirmed — a major margin win. BTIG initiated coverage with a <span className="text-emerald-400 font-medium">$290 target</span> on June 24, calling GTA VI a "multi-year earnings catalyst."
-                  BofA Securities raised their target to <span className="text-emerald-400 font-medium">$368</span> (+54% upside).
+                  Pre-orders are live (<span className="text-white font-medium">$79.99</span> / <span className="text-white font-medium">$99.99</span>), disc-less physical confirmed.
+                  TTWO is up <span className="text-emerald-400 font-medium">~{TTWO.monthChangePct}%</span> this month heading into <span className="text-white font-medium">Q1 earnings on Aug 7</span>, with <span className="text-white font-medium">Trailer 3</span> expected late-July to mid-August.
+                  BofA's Street-high target sits at <span className="text-emerald-400 font-medium">$368</span> (+{upside(368)}% from here).
                 </p>
               </div>
             </div>
@@ -680,8 +772,8 @@ function StockHub() {
                 ))}
               </div>
               <div className="mt-4 pt-4 border-t border-white/[0.06] space-y-1">
-                <div className="flex justify-between text-sm"><span className="text-white/40">Mean Target</span><span className="font-bold mono text-emerald-400">$282</span></div>
-                <div className="flex justify-between text-sm"><span className="text-white/40">Implied Upside</span><span className="font-bold mono text-emerald-400">+18%</span></div>
+                <div className="flex justify-between text-sm"><span className="text-white/40">Mean Target</span><span className="font-bold mono text-emerald-400">${meanTarget}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-white/40">Implied Upside</span><span className="font-bold mono text-emerald-400">+{upside(meanTarget)}%</span></div>
                 <div className="flex justify-between text-sm"><span className="text-white/40">Consensus</span><span className="font-bold text-emerald-400">Buy</span></div>
               </div>
             </div>
@@ -711,7 +803,7 @@ function StockHub() {
           <div className="glass-card-strong p-4 sm:p-6">
             <img src="/ttwo-full-chart.png" alt="TTWO stock price history chart" loading="lazy" decoding="async" className="w-full rounded-lg" />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-              {[{ label: 'From 52W Low', val: '+27.2%', color: 'text-emerald-400' }, { label: 'From ATH', val: '-9.0%', color: 'text-red-400' }, { label: '2Y Return', val: '+51.4%', color: 'text-emerald-400' }, { label: 'Avg Volume', val: '2.25M', color: 'text-white/60' }].map(s => (
+              {[{ label: 'From 52W Low', val: '+29.6%', color: 'text-emerald-400' }, { label: 'From ATH', val: '-8.3%', color: 'text-red-400' }, { label: '1-Month', val: `+${TTWO.monthChangePct}%`, color: 'text-emerald-400' }, { label: 'Avg Volume', val: '2.25M', color: 'text-white/60' }].map(s => (
                 <div key={s.label} className="bg-white/[0.02] rounded-lg p-3 text-center">
                   <div className={`text-lg font-bold mono ${s.color}`}>{s.val}</div>
                   <div className="text-[10px] text-white/30 mt-0.5">{s.label}</div>
@@ -838,7 +930,7 @@ function InGameEconomy() {
     { icon: Briefcase, title: 'Supply Chain Dominance', priority: 'HIGH', desc: 'First players to own and max out passive businesses compound wealth exponentially. Think bunker → nightclub → warehouse stacking.', color: 'orange' },
     { icon: Eye, title: 'Information Arbitrage', priority: 'HIGH', desc: 'In the first 48 hours, YouTube is clickbait city. Real alpha lives in private Discord servers and grinding subreddits. Gatekeep yourself in now.', color: 'orange' },
     { icon: Wallet, title: 'Shark Card Discipline', priority: 'MEDIUM', desc: 'Early vehicles are bait — expensive but quickly outclassed. Spend first 20 hours pure grinding. Never buy cosmetics before income assets.', color: 'emerald' },
-    { icon: Zap, title: 'Exploit Window', priority: 'HIGH', desc: 'Broken money glitches appear in first weeks, before first patch. Rockstar money-wipes (not bans) for first offenses. Understand the risk/reward.', color: 'orange' },
+    { icon: Zap, title: 'First-Mover Window', priority: 'HIGH', desc: 'New businesses and content pay the most before the meta settles and the crowd piles in. Be early, document the optimal loop, and bank the premium while payouts are highest.', color: 'orange' },
     { icon: Users, title: 'Crew Economics', priority: 'MEDIUM', desc: '4 capitalist-minded players = lobby control, sales mission manipulation, exponential profit splitting. Find your board of directors now.', color: 'emerald' },
   ];
 
@@ -956,7 +1048,7 @@ function ContentSuite() {
     { icon: Video, title: 'Hyper-Specific Guides', effort: 'Medium', desc: '"How to unlock the best passive business in 5 hours" — solve the economic puzzle and package it. Search demand will be astronomical.', revenue: 'AdSense + Sponsorships' },
     { icon: BarChart3, title: 'Comparison & Analysis', effort: 'High', desc: "'GTA V vs VI economy: what Rockstar changed.' Positions you as an analyst. Higher CPMs on finance-adjacent content.", revenue: 'High CPM + Affiliates' },
     { icon: Radio, title: 'Shorts / Vertical Clips', effort: 'Low', desc: 'Funny physics fails, quick money tips, heartbreaking moments. TikTok and YouTube Shorts pull massive revenue at scale.', revenue: 'Volume Play + Brand Deals' },
-    { icon: ShoppingCart, title: 'Marketplace Arbitrage', effort: 'High Risk', desc: 'If VI has tradable items (custom cars, rare gear), a secondary market explodes. Buy low with time, sell high for real money.', revenue: 'Direct Sales' },
+    { icon: ShoppingCart, title: 'Data & Tools Products', effort: 'Medium', desc: 'Build the spreadsheet, route map, or price tracker the community keeps asking for and sell it. Zero marginal cost, compounding SEO, no ToS risk.', revenue: 'Digital Products' },
   ];
 
   const platforms = [
@@ -1044,12 +1136,12 @@ function ArbitrageSection() {
   ];
 
   const services = [
-    { name: 'Account Boosting', setup: 'Low', effort: 'High', margin: '70-90%', risk: 'ToS Violation', desc: 'Level up accounts for busy players. $50-200 per account.' },
-    { name: 'Cash Grinding Service', setup: 'Low', effort: 'High', margin: '60-80%', risk: 'ToS Violation', desc: 'Farm in-game currency for buyers. $20-100 per million.' },
-    { name: 'Custom Liveries/Designs', setup: 'Medium', effort: 'Medium', margin: '85-95%', risk: 'Low', desc: 'Create and sell custom car wraps, crew logos. $5-50 each.' },
-    { name: 'Coaching / Tutorials', setup: 'Low', effort: 'Medium', margin: '90%+', risk: 'None', desc: '1-on-1 sessions teaching economy optimization. $30-100/hr.' },
-    { name: 'Modded Account Sales', setup: 'High', effort: 'Low', margin: '50-70%', risk: 'High — Ban Risk', desc: 'Pre-loaded accounts with cash and unlocks. $100-500 each.' },
-    { name: 'Discord Community', setup: 'Low', effort: 'Medium', margin: '95%+', risk: 'None', desc: 'Paid community with exclusive tips, early strats. $5-20/mo per member.' },
+    { name: 'Coaching / Tutorials', setup: 'Low', effort: 'Medium', margin: '90%+', risk: 'Clean', desc: '1-on-1 sessions teaching economy optimization. $30-100/hr.' },
+    { name: 'Custom Liveries & Designs', setup: 'Medium', effort: 'Medium', margin: '85-95%', risk: 'Clean', desc: 'Sell liveries, crew logos, and photo-mode edits. $5-50 each.' },
+    { name: 'Paid Discord Community', setup: 'Low', effort: 'Medium', margin: '95%+', risk: 'Clean', desc: 'Membership with exclusive routes, early strats, and tools. $5-20/mo per member.' },
+    { name: 'Clip Editing for Creators', setup: 'Low', effort: 'Medium', margin: '80-90%', risk: 'Clean', desc: 'Edit short-form clips for streamers who cannot keep up. $20-60 per clip.' },
+    { name: 'Guide & Data Products', setup: 'Medium', effort: 'Low', margin: '90%+', risk: 'Clean', desc: 'Route maps, ROI spreadsheets, photo-mode presets. Zero marginal cost.' },
+    { name: 'Tournament / Event Hosting', setup: 'Medium', effort: 'Medium', margin: '60-80%', risk: 'Clean', desc: 'Run races and challenges with entry fees + sponsor payouts. Build an audience you own.' },
   ];
 
   const merchandise = [
@@ -1105,7 +1197,7 @@ function ArbitrageSection() {
               <div key={s.name} className="glass-card p-5 hover:bg-white/[0.04] transition-all">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-sm">{s.name}</h3>
-                  <Badge className={`text-[10px] ${s.risk.includes('None') ? 'bg-emerald-500/15 text-emerald-400' : s.risk.includes('Low') ? 'bg-orange-500/15 text-orange-400' : 'bg-red-500/15 text-red-400'}`}>{s.risk}</Badge>
+                  <Badge className={`text-[10px] ${s.risk.includes('Clean') || s.risk.includes('None') ? 'bg-emerald-500/15 text-emerald-400' : s.risk.includes('Low') ? 'bg-orange-500/15 text-orange-400' : 'bg-red-500/15 text-red-400'}`}>{s.risk === 'Clean' ? 'ToS-safe' : s.risk}</Badge>
                 </div>
                 <p className="text-xs text-white/40 mb-3 leading-relaxed">{s.desc}</p>
                 <div className="grid grid-cols-3 gap-2 text-center">
@@ -1115,6 +1207,20 @@ function ArbitrageSection() {
                 </div>
               </div>
             ))}
+            {/* Honest "what we don't touch" callout — turns a liability into a trust signal */}
+            <div className="sm:col-span-2 lg:col-span-3 glass-card p-5 border-l-4 border-l-red-500/60">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-sm mb-1.5">What we don't touch — and why you shouldn't either</h4>
+                  <p className="text-xs text-white/45 leading-relaxed">
+                    Modded-account sales, real-money currency selling (RMT), and paid boosting all violate Take-Two's Terms of Service.
+                    Beyond bans, they get your <span className="text-white/70">payment processor frozen</span>, your <span className="text-white/70">ad account and affiliate deals terminated</span>, and invite legal exposure — Take-Two has a long history of pursuing them.
+                    The ToS-safe businesses above have a far higher ceiling because they can actually take sponsorships, ads, and card payments. Building trust <span className="text-emerald-400">is</span> the moat.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1249,7 +1355,8 @@ function Toolkit() {
 function TimelineRisk() {
   const events = [
     { date: 'Jun 25, 2026', title: 'Pre-Orders Live', desc: '$79.99 Standard / $99.99 Ultimate. Disc-less physical edition confirmed.', status: 'done', impact: 'HIGH' },
-    { date: 'Aug 2026', title: 'Gameplay Deep Dive Expected', desc: 'Rockstar typically drops detailed gameplay ~3 months before launch.', status: 'upcoming', impact: 'HIGH' },
+    { date: 'Late Jul–Aug 2026', title: 'Trailer 3 Expected', desc: 'The next trailer is projected for late July to mid-August — the biggest pre-launch search-volume spike.', status: 'upcoming', impact: 'HIGH' },
+    { date: 'Aug 7, 2026', title: 'Q1 FY26 Earnings', desc: 'Take-Two reports before launch. Guidance and any GTA VI commentary move the stock.', status: 'upcoming', impact: 'HIGH' },
     { date: 'Sep 2026', title: 'Review Embargoes Lift', desc: 'Early access for major outlets. Metacritic scores will move TTWO.', status: 'upcoming', impact: 'MEDIUM' },
     { date: 'Nov 19, 2026', title: 'GTA VI Launch Day', desc: 'Biggest entertainment launch in history. Server stability is the question.', status: 'upcoming', impact: 'CRITICAL' },
     { date: 'Dec 2026', title: 'First Earnings Call', desc: 'Watch: sales figures, ARPU, Online player retention at 30 days.', status: 'upcoming', impact: 'HIGH' },
@@ -1367,7 +1474,7 @@ function Footer() {
           </div>
         </div>
         <div className="pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] text-white/20">Not financial advice. For informational and entertainment purposes only. Data as of June 26, 2026.</p>
+          <p className="text-[10px] text-white/20">Not financial advice — informational and entertainment purposes only. Market data snapshot as of July 17, 2026.</p>
           <p className="text-[10px] text-white/20 mono">VICECAPITAL // GTA VI EDITION</p>
         </div>
       </div>
