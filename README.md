@@ -74,6 +74,16 @@ it live, copy `.env.example` to `.env.local` and set any of these (all optional)
 The market numbers are an honest snapshot (labeled with the "as of" date in the UI). The app never
 presents stale data as live — wire `VITE_QUOTE_ENDPOINT` to flip it to real-time.
 
+## Serverless functions (`/api`, deployed automatically by Vercel)
+
+| Endpoint | What it does |
+|---|---|
+| `GET /api/quote?symbol=TTWO` | Keyless quote proxy (allowlisted symbols, 5-min edge cache). The frontend points here by default; on any failure the UI falls back to its labeled snapshot. The upstream source is unofficial and may break — that fallback is the designed behavior. |
+| `POST /api/subscribe` | Validates signups and forwards them to the webhook in the **`SUBSCRIBE_FORWARD_URL`** server env var (Formspree / Zapier / Buttondown / your own). **Set that env var in Vercel or the email list is browser-local only.** |
+
+These functions don't run under `npm run dev`/`preview` (no Vercel runtime locally); the UI degrades
+gracefully there by design.
+
 ## Content & SEO layer
 
 The React app is the interactive command center. Alongside it is a set of **static,

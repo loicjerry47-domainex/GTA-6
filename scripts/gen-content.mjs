@@ -169,6 +169,8 @@ pages.push({
   <a class="card" href="/guides/how-to-invest-in-gta-6-ttwo-stock/"><h2>How to invest in GTA 6 (TTWO stock)</h2><p>There's no "GTA 6 stock" — the pure-play is Take-Two (TTWO). Targets, catalysts, peripheral plays and the risks.</p><span class="go">Read →</span></a>
   <a class="card" href="/guides/how-to-make-money-gta-6-online/"><h2>How to make money in GTA 6 Online</h2><p>The ToS-safe playbook: own income assets early, price your time, and move first — no glitches, no bans.</p><span class="go">Read →</span></a>
   <a class="card" href="/guides/gta-6-map-regions-leonida/"><h2>The GTA 6 map: six regions of Leonida</h2><p>A Florida-inspired state nearly twice the size of GTA V. Every region's economy and opportunity, explained.</p><span class="go">Read →</span></a>
+  <a class="card" href="/guides/gta-6-trailer-3/"><h2>GTA 6 Trailer 3: expected date &amp; what to watch</h2><p>Projected for late July–mid-August. Why the window, what it will show, and how trailer days move TTWO.</p><span class="go">Read →</span></a>
+  <a class="card" href="/guides/gta-6-pc-release/"><h2>Is GTA 6 coming to PC?</h2><p>Not at launch. Rockstar's history points to late 2027–2028 — the pattern, the strategy behind it, and how to prepare.</p><span class="go">Read →</span></a>
 </div>
 <p class="note">New to the project? Start at the <a href="/">interactive command center</a> or read <a href="/about/">how we build this</a>.</p>`,
 });
@@ -341,6 +343,81 @@ ${faqBlock(faqs)}`,
   });
 }
 
+/* GUIDE: trailer 3 */
+{
+  const faqs = [
+    { q: 'When does GTA 6 Trailer 3 come out?', a: 'Rockstar has not announced a date. Industry projections point to <strong>late July to mid-August 2026</strong>, roughly three months before the November 19 launch — consistent with Rockstar’s historical pre-launch marketing cadence.' },
+    { q: 'What time does Rockstar release trailers?', a: 'Historically Rockstar posts major trailers in the morning US Eastern time, announced a day or more in advance on its official channels. Watch @RockstarGames and the Rockstar Newswire for the announcement.' },
+    { q: 'What will Trailer 3 show?', a: 'Expect a deeper look at gameplay systems shown only in leaks so far — heists, the dual-protagonist switch, and the online component. Trailer 2 focused on story and world; a third trailer this close to launch typically sells the systems.' },
+    { q: 'Does the trailer affect Take-Two stock?', a: 'Trailer days are attention spikes: Trailer 1 broke YouTube records and preceded measurable TTWO moves. Expect elevated volume around the drop; the durable effect depends on whether the trailer lands well.' },
+  ];
+  pages.push({
+    path: '/guides/gta-6-trailer-3/', changefreq: 'daily', priority: 0.9,
+    title: 'GTA 6 Trailer 3: Expected Date, What to Watch For | Vice Capital',
+    description: 'GTA 6 Trailer 3 is projected for late July to mid-August 2026, ~3 months before launch. When to expect it, what it will likely show, and how trailer days move TTWO.',
+    kicker: 'Guide · Catalyst watch', h1: 'GTA 6 Trailer 3: expected date &amp; what to watch for',
+    crumbs: [{ name: 'Guides', path: '/guides/' }, { name: 'Trailer 3 watch', path: '/guides/gta-6-trailer-3/' }],
+    jsonLd: [articleSchema({ path: '/guides/gta-6-trailer-3/', title: 'GTA 6 Trailer 3: Expected Date, What to Watch For', description: 'GTA 6 Trailer 3 is projected for late July to mid-August 2026.' }), faqSchema(faqs)],
+    body: `
+<p class="lede"><strong>GTA 6 Trailer 3 has not been dated yet.</strong> Projections point to <strong>late July to mid-August 2026</strong> — roughly three months before the November 19 launch, matching Rockstar’s historical cadence. This page tracks what we know and updates when it drops.</p>
+${takeaways([
+  'No official date; projected window is <strong>late July – mid-August 2026</strong>.',
+  'Rockstar historically drops a detailed gameplay showcase ~3 months pre-launch.',
+  'Trailer days are the biggest attention spikes before launch — for search, social, and TTWO volume.',
+  'Get pinged when it drops: pick the <strong>Trailer 3</strong> alert on the <a href="/#top">command center</a>.',
+])}
+<h2>Why the window points to late July–August</h2>
+<p>Rockstar’s pattern across GTA V and Red Dead Redemption 2 is a final, systems-focused showcase about three months before release. With launch locked for November 19, that puts the expected window in <strong>late July to mid-August 2026</strong>. Nothing is confirmed until Rockstar says so — treat any specific date circulating on social media as rumor.</p>
+<h2>What Trailer 3 will likely show</h2>
+<p>Trailer 1 sold the world, Trailer 2 sold the story. A third trailer this close to launch typically sells the <em>systems</em>: heist structure, the Jason–Lucia switch mechanic, police response, and possibly the first official look at the online mode’s ambitions. For the capitalist, the online reveal is the one that matters — it’s the recurring-revenue engine Wall Street is pricing.</p>
+<h2>How trailer days move the market</h2>
+<p>Trailer 1 broke YouTube’s 24-hour record and made TTWO one of the most-watched tickers that week. Expect elevated volume and options activity around the drop. The durable move depends on reception — a strong systems showcase de-risks the launch; a delay announcement would do the opposite. See <a href="/guides/how-to-invest-in-gta-6-ttwo-stock/">the TTWO guide</a> for the full catalyst calendar.</p>
+<h2>How to be positioned before it drops</h2>
+<p>Content published <em>within hours</em> of a trailer captures disproportionate search and algorithmic attention. Have your reaction format ready, your analysis template drafted, and your distribution channels warm. Subscribe to the <strong>Trailer 3 alert</strong> on our <a href="/#top">command center</a> and we’ll ping you the moment it lands.</p>
+${faqBlock(faqs)}
+${disclaimerNote}`,
+  });
+}
+
+/* GUIDE: PC release */
+{
+  const faqs = [
+    { q: 'Is GTA 6 coming to PC?', a: 'Not at launch. GTA 6 releases November 19, 2026 on PS5 and Xbox Series X|S only. No PC version has been announced, but Rockstar has brought every modern GTA to PC eventually.' },
+    { q: 'When will GTA 6 release on PC?', a: 'Unannounced. Based on Rockstar’s pattern — GTA V took ~19 months, RDR2 ~13 months — a reasonable expectation is <strong>late 2027 to 2028</strong>. Treat any firm date you see as speculation.' },
+    { q: 'Should I buy a console or wait for PC?', a: 'If you need day-one access (creators especially), console is the only option. If you mainly play on PC and can wait a year or more, history says a technically superior PC version arrives — often alongside a second content wave.' },
+    { q: 'What PC specs will GTA 6 need?', a: 'Unknown until Rockstar publishes requirements. The console baseline (RDNA 2-class GPU, fast NVMe SSD, 16GB shared memory) suggests a mid-range gaming PC of 2026-27 with a fast SSD will be the realistic floor.' },
+  ];
+  pages.push({
+    path: '/guides/gta-6-pc-release/', changefreq: 'weekly', priority: 0.8,
+    title: 'Is GTA 6 Coming to PC? Expected Release Window & What We Know | Vice Capital',
+    description: 'GTA 6 launches console-only on November 19, 2026. No PC date is announced — Rockstar’s history points to late 2027–2028. The pattern, the why, and how to prepare.',
+    kicker: 'Guide · PC watch', h1: 'Is GTA 6 coming to PC? The expected timeline',
+    crumbs: [{ name: 'Guides', path: '/guides/' }, { name: 'PC release watch', path: '/guides/gta-6-pc-release/' }],
+    jsonLd: [articleSchema({ path: '/guides/gta-6-pc-release/', title: 'Is GTA 6 Coming to PC? Expected Release Window & What We Know', description: 'GTA 6 launches console-only; PC is expected to follow.' }), faqSchema(faqs)],
+    body: `
+<p class="lede"><strong>GTA 6 is not coming to PC at launch.</strong> It releases November 19, 2026 on PS5 and Xbox Series X|S only. No PC version is announced — but Rockstar has eventually brought every modern GTA to PC, and its track record points to <strong>late 2027–2028</strong>.</p>
+${takeaways([
+  'No PC version at launch and no announced date.',
+  'Precedent: GTA V hit PC <strong>~19 months</strong> after console; RDR2 took <strong>~13 months</strong>.',
+  'A reasonable expectation is <strong>late 2027 to 2028</strong> — unconfirmed.',
+  'The PC launch is historically a second revenue wave: double-dip sales, mods, and a fresh content cycle.',
+])}
+<h2>The pattern: console first, PC later</h2>
+${table(['Game', 'Console launch', 'PC launch', 'Gap'], [
+  ['GTA V', 'Sep 2013', 'Apr 2015', '~19 months'],
+  ['Red Dead Redemption 2', 'Oct 2018', 'Nov 2019', '~13 months'],
+  ['GTA 6', 'Nov 19, 2026', 'Unannounced', 'Expected 12–24 months'],
+])}
+<p>The delay is strategy, not neglect: console-first limits piracy during the critical first-year window, simplifies optimization to two hardware targets, and converts the most impatient PC players into double-dip buyers who purchase twice.</p>
+<h2>Why the PC release matters financially</h2>
+<p>The PC wave is a second launch: returning buyers, the modding ecosystem, and — if it lands alongside a major online expansion — a second hype cycle for <a href="/guides/how-to-invest-in-gta-6-ttwo-stock/">TTWO</a>. For content creators, PC also unlocks the mod-showcase genre that fueled years of GTA V content.</p>
+<h2>How to prepare without wasting money</h2>
+<p>Don’t buy hardware for unpublished specs. If you’re building anyway, the console baseline implies a fast NVMe SSD and a mid-range-or-better GPU will be the realistic floor. Otherwise: wait for Rockstar’s official requirements, and subscribe to alerts on the <a href="/#top">command center</a> — we’ll ping you when the PC announcement lands.</p>
+${faqBlock(faqs)}
+${disclaimerNote}`,
+  });
+}
+
 /* ABOUT */
 pages.push({
   path: '/about/', changefreq: 'monthly', priority: 0.5,
@@ -455,4 +532,58 @@ console.log('wrote sitemap.xml');
 writeFileSync(join(PUBLIC, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${abs('/sitemap.xml')}\n`);
 console.log('wrote robots.txt');
 
-console.log(`\nDone. ${pages.length} pages + sitemap + robots. SITE_URL=${SITE_URL}`);
+/* llms.txt — a plain-language map of the site for AI answer engines */
+const guidePages = pages.filter(p => p.path.startsWith('/guides/') && p.path !== '/guides/');
+writeFileSync(join(PUBLIC, 'llms.txt'), `# ${SITE_NAME}
+
+> Independent GTA VI (Grand Theft Auto 6) intelligence: the TTWO stock angle, the in-game
+> economy, and the content economy around the November 19, 2026 launch. Unofficial fan
+> project; not affiliated with Rockstar Games or Take-Two Interactive. Not financial advice.
+
+## Guides
+${guidePages.map(p => `- [${p.title.replace(/ \| Vice Capital$/, '')}](${abs(p.path)}): ${p.description}`).join('\n')}
+
+## Company
+- [About & methodology](${abs('/about/')}): How we research, source, and label data.
+- [Disclaimer](${abs('/legal/disclaimer/')}): Not financial advice; independence; data snapshots.
+`);
+console.log('wrote llms.txt');
+
+/* feed.xml — minimal RSS for the guides */
+const rssItems = guidePages.map(p => `  <item>
+    <title>${esc(p.title.replace(/ \| Vice Capital$/, ''))}</title>
+    <link>${abs(p.path)}</link>
+    <guid isPermaLink="true">${abs(p.path)}</guid>
+    <pubDate>${new Date(PUBLISHED + 'T12:00:00Z').toUTCString()}</pubDate>
+    <description>${esc(p.description)}</description>
+  </item>`).join('\n');
+writeFileSync(join(PUBLIC, 'feed.xml'), `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+  <title>${SITE_NAME} — GTA 6 Guides</title>
+  <link>${SITE_URL}/</link>
+  <description>Guides to the GTA 6 opportunity: markets, in-game economy, and the content economy.</description>
+  <language>en</language>
+${rssItems}
+</channel></rss>
+`);
+console.log('wrote feed.xml');
+
+/* 404.html — branded not-found page (Vercel serves 404.html for unknown routes) */
+writeFileSync(join(PUBLIC, '404.html'), layout({
+  path: '/404.html',
+  title: 'Page not found | ' + SITE_NAME,
+  description: 'That page does not exist. Head back to the command center or browse the guides.',
+  kicker: '404', h1: 'This block doesn&#8217;t exist', updated: false,
+  crumbs: [], jsonLd: [], ogType: 'website',
+  body: `
+<p class="lede">Wrong turn in Leonida. The page you're looking for was moved, renamed, or never existed.</p>
+<div class="cards">
+  <a class="card" href="/"><h2>Command center</h2><p>The interactive dashboard — countdown, stocks, economy, map.</p><span class="go">Go →</span></a>
+  <a class="card" href="/guides/"><h2>Guides</h2><p>Answer-first guides to the GTA 6 opportunity.</p><span class="go">Browse →</span></a>
+</div>`,
+})
+  .replace(`<link rel="canonical" href="${abs('/404.html')}">\n`, '')
+  .replace('content="index, follow, max-image-preview:large"', 'content="noindex"'));
+console.log('wrote 404.html');
+
+console.log(`\nDone. ${pages.length} pages + sitemap, robots, llms.txt, feed.xml, 404. SITE_URL=${SITE_URL}`);

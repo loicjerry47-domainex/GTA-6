@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check and build
+        run: npm run build
+
+      - name: Content generator runs cleanly
+        run: node scripts/gen-content.mjs
+
+      - name: Generated content is committed (no drift)
+        run: |
+          if ! git diff --quiet -- public; then
+            echo "::error::public/ content differs from generator output. Run 'node scripts/gen-content.mjs' and commit."
+            git diff --stat -- public
+            exit 1
+          fi

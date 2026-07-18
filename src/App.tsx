@@ -1476,10 +1476,12 @@ function Footer() {
             <ul className="space-y-2">
               {[
                 { label: 'All guides', href: '/guides/' },
+                { label: 'Trailer 3 watch', href: '/guides/gta-6-trailer-3/' },
                 { label: 'Release date & editions', href: '/guides/gta-6-release-date/' },
                 { label: 'Invest in GTA 6 (TTWO)', href: '/guides/how-to-invest-in-gta-6-ttwo-stock/' },
                 { label: 'Make money in GTA Online', href: '/guides/how-to-make-money-gta-6-online/' },
                 { label: 'The map of Leonida', href: '/guides/gta-6-map-regions-leonida/' },
+                { label: 'PC release watch', href: '/guides/gta-6-pc-release/' },
               ].map(item => (
                 <li key={item.href}><a href={item.href} className="text-sm text-white/30 hover:text-orange-400 transition-colors">{item.label}</a></li>
               ))}
